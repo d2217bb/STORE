@@ -1,20 +1,24 @@
 import { Product } from "@/types";
 
-interface GetProductsParams {
-  categoryId?: string;
-  colorId?: string;
-  sizeId?: string;
-}
+const safeFetch = async <T>(url: string): Promise<T | []> => {
+  try {
+    const res = await fetch(url);
+    const contentType = res.headers.get("content-type");
 
-const getProducts = async ({ categoryId, colorId, sizeId }: GetProductsParams): Promise<Product[]> => {
-  const query = new URLSearchParams();
-  if (categoryId) query.append("categoryId", categoryId);
-  if (colorId) query.append("colorId", colorId);
-  if (sizeId) query.append("sizeId", sizeId);
+    if (contentType && contentType.includes("application/json")) {
+      return await res.json();
+    } else {
+      console.warn("Received non-JSON response from", url);
+      return [] as any;
+    }
+  } catch (error) {
+    console.error("Fetch error:", error);
+    return [] as any;
+  }
+};
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products?${query.toString()}`);
-  if (!res.ok) throw new Error("Failed to fetch products");
-  return res.json();
+const getProducts = async (storeId: string): Promise<Product[]> => {
+  return safeFetch<Product[]>(`${process.env.NEXT_PUBLIC_API_URL}/${storeId}/products`);
 };
 
 export default getProducts;
