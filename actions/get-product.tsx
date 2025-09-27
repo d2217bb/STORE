@@ -1,13 +1,9 @@
-import {Product} from "@/types";
+import { Product } from "@/types";
 
-const URL = `${process.env.NEXT_PUBLIC_API_URL}/products`;
+const getProduct = async (productId: string): Promise<Product> => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${productId}`);
+  if (!res.ok) throw new Error("Failed to fetch product");
+  return res.json();
+};
 
-const getProduct = async (id:string): Promise<Product> => {
-    const res = await fetch(`${URL}/${id}`, {
-        next: { 
-            revalidate: 0 // Revalidează la 0 minute
-            
-        }});
-    return res.json();
-}
 export default getProduct;
